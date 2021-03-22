@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Chat App</string>
+    <string name="btn_login_txt">Entrar</string>
+    <string name="btn_create_account_txt">Não tem uma conta? Crie aqui!</string>
+    <string name="campo_senha_hint">Senha</string>
+    <string name="campo_email_hint">Email</string>
+    <string name="campo_nome_hint">Nome</string>
+    <string name="btn_create_account2_txt">cadastrar</string>
 </resources>
