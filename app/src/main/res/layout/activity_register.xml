@@ -74,7 +74,7 @@
         app:layout_constraintTop_toBottomOf="@id/edit_email" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_signin"
+        android:id="@+id/btn_signup"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:text="@string/btn_create_account2_txt"

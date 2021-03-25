@@ -11,12 +11,17 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
 import com.android.chatapp.databinding.ActivityRegisterBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import java.io.IOException
+import java.util.*
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
-    private lateinit var mSelectedUri: Uri
+    private var mSelectedUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +35,61 @@ class RegisterActivity : AppCompatActivity() {
         btnSelectPhoto.setOnClickListener {
             pickPhotoFromGallery()
         }
+
+        btnSignup.setOnClickListener {
+            val userName = editName.text.trim()
+            val userEmail = editEmail.text.toString()
+            val userPassword = editPassword.text.toString()
+
+            if (userName.isNotEmpty() && userEmail.isNotEmpty()
+                && userPassword.isNotEmpty() && mSelectedUri != null)
+                createUser(userEmail, userPassword)
+            else
+                Toast.makeText(this@RegisterActivity, "Preencha todos os dados do formulário", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun createUser(email: String, password: String) {
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener {
+                    saveUser()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this@RegisterActivity, it.localizedMessage, Toast.LENGTH_SHORT).show()
+                }
+    }
+
+    private fun saveUser() {
+        val filename = UUID.randomUUID().toString()
+        val ref = Firebase.storage.getReference("images/$filename")
+            ref.putFile(mSelectedUri as Uri)
+                .addOnSuccessListener {
+                        ref.downloadUrl
+                                .addOnSuccessListener {
+                                val uid = FirebaseAuth.getInstance().currentUser?.uid as String
+                                val userName = binding.editName.text.toString()
+
+                                Firebase.firestore.collection("users")
+                                        .add(User(uid, userName, it.toString()))
+                                        .addOnCompleteListener {
+                                            if(it.isSuccessful) {
+
+                                            } else {
+
+                                            }
+                                        }
+                                }
+                                .addOnFailureListener {
+                                    FirebaseAuth.getInstance().currentUser?.delete()
+                                    ref.delete()
+                                    Toast.makeText(this@RegisterActivity, it.localizedMessage, Toast.LENGTH_SHORT).show()
+                                }
+                }
+                    .addOnFailureListener {
+                        FirebaseAuth.getInstance().currentUser?.delete()
+                        Toast.makeText(this@RegisterActivity, it.localizedMessage, Toast.LENGTH_SHORT).show()
+                    }
+
     }
 
     private fun pickPhotoFromGallery() {
