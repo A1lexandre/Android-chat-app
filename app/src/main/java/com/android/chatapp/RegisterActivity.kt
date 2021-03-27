@@ -2,14 +2,11 @@ package com.android.chatapp
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Toast
-import androidx.appcompat.widget.AppCompatButton
 import com.android.chatapp.databinding.ActivityRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
@@ -73,9 +70,14 @@ class RegisterActivity : AppCompatActivity() {
                                         .add(User(uid, userName, it.toString()))
                                         .addOnCompleteListener {
                                             if(it.isSuccessful) {
-
+                                                val intent = Intent(this@RegisterActivity, MessagesActivity::class.java)
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                startActivity(intent)
                                             } else {
-
+                                                FirebaseAuth.getInstance().currentUser?.delete()
+                                                ref.delete()
+                                                Toast.makeText(this@RegisterActivity, it.exception?.localizedMessage, Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                 }

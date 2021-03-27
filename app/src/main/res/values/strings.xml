@@ -6,4 +6,6 @@
     <string name="campo_email_hint">Email</string>
     <string name="campo_nome_hint">Nome</string>
     <string name="btn_create_account2_txt">cadastrar</string>
+    <string name="contacts_menu_label">contacts</string>
+    <string name="logout_menu_label">logout</string>
 </resources>
