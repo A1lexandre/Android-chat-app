@@ -58,7 +58,7 @@ class MessagesActivity : AppCompatActivity() {
     private fun fetchLastMessages() {
         Firebase.firestore.collection("/last-messages")
                 .document(auth.uid as String).collection("contacts")
-                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener { value, error ->
                     if(error != null) {
                         Toast.makeText(this, error.localizedMessage, Toast.LENGTH_SHORT).show()
