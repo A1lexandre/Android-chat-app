@@ -67,7 +67,8 @@ class RegisterActivity : AppCompatActivity() {
                                 val userName = binding.editName.text.toString()
 
                                 Firebase.firestore.collection("users")
-                                        .add(User(uid, userName, it.toString()))
+                                    .document(uid)
+                                        .set(User(uid, userName, it.toString()))
                                         .addOnCompleteListener {
                                             if(it.isSuccessful) {
                                                 val intent = Intent(this@RegisterActivity, MessagesActivity::class.java)

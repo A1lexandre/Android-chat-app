@@ -8,4 +8,6 @@
     <string name="btn_create_account2_txt">cadastrar</string>
     <string name="contacts_menu_label">contacts</string>
     <string name="logout_menu_label">logout</string>
+    <string name="enviar_btn_label">enviar</string>
+    <string name="msg_field_label">Digite a mensagem</string>
 </resources>

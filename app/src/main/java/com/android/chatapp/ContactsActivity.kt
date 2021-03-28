@@ -1,13 +1,13 @@
 package com.android.chatapp
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.chatapp.databinding.ActivityContactsBinding
-import com.android.chatapp.databinding.ContactItemBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.squareup.picasso.Picasso
@@ -28,6 +28,12 @@ class ContactsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         groupAdapter = GroupAdapter()
+        groupAdapter.setOnItemClickListener { item, view ->
+            val user = (item as ContactItem).contact
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra(USER, user)
+            startActivity(intent)
+        }
 
         binding.contactList.apply {
             adapter = groupAdapter
@@ -48,13 +54,18 @@ class ContactsActivity : AppCompatActivity() {
 
                     value?.let {
                         val contactList = it.toObjects(User::class.java)
-                        groupAdapter.addAll(contactList.toUserItem())
+                        contactList.sortBy { it.name }
+                        groupAdapter.addAll(
+                            contactList.filter {
+                                !it.uuid.equals(FirebaseAuth.getInstance().uid)
+                            }.toUserItem()
+                        )
                         groupAdapter.notifyDataSetChanged()
                     }
                 }
     }
 
-    inner class ContactItem(private val contact: User): Item<GroupieViewHolder>() {
+    inner class ContactItem(val contact: User): Item<GroupieViewHolder>() {
 
         override fun getLayout(): Int = R.layout.contact_item
 
@@ -72,6 +83,10 @@ class ContactsActivity : AppCompatActivity() {
         return this.map {
             ContactItem(it)
         }
+    }
+
+    companion object {
+        const val USER = "user"
     }
 
 }

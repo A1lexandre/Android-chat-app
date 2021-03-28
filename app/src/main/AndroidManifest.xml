@@ -9,10 +9,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChatApp">
-        <activity android:label="Contacts" android:name=".ContactsActivity">
+        <activity android:name=".ChatActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MessagesActivity"/>
+        </activity>
+        <activity
+            android:name=".ContactsActivity"
+            android:label="Contacts">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MessagesActivity" />
         </activity>
         <activity android:name=".MessagesActivity">
             <intent-filter>
