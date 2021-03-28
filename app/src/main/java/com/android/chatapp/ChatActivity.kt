@@ -64,7 +64,9 @@ class ChatActivity : AppCompatActivity() {
         val fromId = auth.uid
         val toId = userContact.uuid
 
-        val message =  Message(msg, fromId, toId, System.currentTimeMillis())
+        val timestamp = System.currentTimeMillis()
+
+        val message =  Message(msg, fromId, toId, timestamp)
 
         val myMessageRef = firestore.collection("/conversations")
             .document(fromId).collection(toId).document()
@@ -72,11 +74,18 @@ class ChatActivity : AppCompatActivity() {
         val contactMessageRef = firestore.collection("/conversations")
             .document(toId).collection(fromId).document()
 
+        val myLastMessageRef = firestore.collection("/last-messages")
+                .document(fromId).collection("contacts").document(toId)
+
+        val contactLastMessageRef = firestore.collection("/last-messages")
+                .document(toId).collection("contacts").document(fromId)
+
         val batch = firestore.batch()
         batch.set(myMessageRef, message)
         batch.set(contactMessageRef, message)
+        batch.set(myLastMessageRef, Contact(toId, userContact.name, userContact.profileUrl, msg, timestamp))
+        batch.set(contactLastMessageRef, Contact(fromId, me.name, me.profileUrl, msg, timestamp))
         batch.commit()
-
     }
 
     private fun fetchMessages() {
@@ -96,12 +105,11 @@ class ChatActivity : AppCompatActivity() {
                 val documentChanges = value?.documentChanges
 
                 if (documentChanges != null)
-                    for (doc in documentChanges) {
+                    for (doc in documentChanges)
                         if (doc.type == DocumentChange.Type.ADDED) {
                             val msg = doc.document.toObject(Message::class.java)
                             gAdapter.add(MessageItem(msg))
                         }
-                    }
             }
     }
 
