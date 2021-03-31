@@ -2,12 +2,12 @@ package com.android.chatapp
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.chatapp.ContactsActivity.Companion.USER
 import com.android.chatapp.databinding.ActivityMessagesBinding
 import com.android.chatapp.databinding.LastMessageItemBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +15,7 @@ import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupieAdapter
 import com.xwray.groupie.viewbinding.BindableItem
@@ -33,6 +34,8 @@ class MessagesActivity : AppCompatActivity() {
         binding = ActivityMessagesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        application.registerActivityLifecycleCallbacks(ChatApplication())
+
         verifyAuthentication()
     }
 
@@ -46,9 +49,21 @@ class MessagesActivity : AppCompatActivity() {
         }
         setupRecyclerView()
         fetchLastMessages()
+        updateToken()
     }
 
     private fun setupRecyclerView() {
+        gAdapter.setOnItemClickListener { item, view ->
+            Firebase.firestore.collection("users")
+                    .document((item as ContactItem).contact.uuid)
+                    .get().addOnCompleteListener {
+                        if(it.isSuccessful) {
+                            val intent = Intent(this@MessagesActivity, ChatActivity::class.java)
+                            intent.putExtra(USER, it.result?.toObject(User::class.java))
+                            startActivity(intent)
+                        }
+                    }
+        }
         binding.lastMessageList.apply {
             layoutManager = LinearLayoutManager(this@MessagesActivity)
             adapter = gAdapter
@@ -70,13 +85,22 @@ class MessagesActivity : AppCompatActivity() {
                     if(documentChanges != null)
                         for(doc in documentChanges)
                             if(doc.type == DocumentChange.Type.ADDED){
-                                Log.i("Entrei", "Tô aqui")
                                 val contact = doc.document.toObject(Contact::class.java)
                                 gAdapter.add(ContactItem(contact))
                             }
-
-                    Log.i("countuu", gAdapter.itemCount.toString())
                 }
+    }
+
+    private fun updateToken() {
+        if(auth.currentUser != null) {
+            FirebaseMessaging.getInstance().token.addOnCompleteListener {
+                if(it.isSuccessful) {
+                    val uid = auth.uid
+                    Firebase.firestore.collection("users")
+                            .document(uid as String).update("token", it.result)
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -90,22 +114,20 @@ class MessagesActivity : AppCompatActivity() {
                 startActivity(Intent(this, ContactsActivity::class.java))
             }
             R.id.logout -> {
-                auth.signOut()
-                verifyAuthentication()
+                Firebase.firestore.collection("users")
+                        .document(auth.uid as String).update("online", false)
+                        .addOnCompleteListener {
+                            if(it.isSuccessful) {
+                                auth.signOut()
+                                verifyAuthentication()
+                            }
+                        }
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
     inner class ContactItem(val contact: Contact): BindableItem<LastMessageItemBinding>() {
-
-//        override fun bind(viewHolder: GroupieViewHolder<LastMessageItemBinding>, position: Int) = with(viewHolder.binding) {
-//            contactName.text = contact.userName
-//            lastMessage.text = contact.lastMessage
-//            Picasso.get()
-//                    .load(contact.userPhotoUrl)
-//                    .into(contactPhoto)
-//        }
 
         override fun getLayout(): Int = R.layout.last_message_item
 

@@ -1,10 +1,10 @@
 package com.android.chatapp
 
-data class Message(
-    val txt: String,
-    val fromId: String,
-    val toId: String,
-    val timestamp: Long
+open class Message(
+    open val txt: String,
+    open val fromId: String,
+    open val toId: String,
+    open val timestamp: Long
 ) {
     constructor(): this("", "", "", 0)
 }

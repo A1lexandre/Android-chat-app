@@ -85,6 +85,14 @@ class ChatActivity : AppCompatActivity() {
         batch.set(contactMessageRef, message)
         batch.set(myLastMessageRef, Contact(toId, userContact.name, userContact.profileUrl, msg, timestamp))
         batch.set(contactLastMessageRef, Contact(fromId, me.name, me.profileUrl, msg, timestamp))
+        if(!userContact.online) {
+            val notification = Notification(msg, fromId, toId, message.timestamp, me.name)
+
+            val notificationRef = firestore.collection("/notifications")
+                .document(userContact.token)
+
+            batch.set(notificationRef, notification)
+        }
         batch.commit()
     }
 

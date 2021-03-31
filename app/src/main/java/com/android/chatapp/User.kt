@@ -7,7 +7,11 @@ import kotlinx.parcelize.Parcelize
 data class User(
     val uuid: String,
     val name: String,
-    val profileUrl: String): Parcelable {
+    val profileUrl: String,
+    val token: String,
+    val online: Boolean): Parcelable {
 
-    constructor() : this("", "", "")
+    constructor() : this("", "", "", "", true)
+
+    constructor(uuid: String, name: String, profileUrl: String): this(uuid, name, profileUrl, "", true)
 }
